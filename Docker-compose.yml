@@ -1,38 +1,41 @@
 services:
   mysqldb:
-    container_name: mysql-db
     image: mysql:8
+    container_name: mysql-db
     environment:
       MYSQL_ROOT_PASSWORD: docker
-      MYSQL_DATABASE: projectdb
-      # MYSQL_USER: klu
-      # MYSQL_PASSWORD: klu
+      MYSQL_DATABASE: productdb
     ports:
-      - "3307:3306" 
+      - "3307:3306"
     volumes:
-      - mysql-data:/var/lib/mysql   # volume added here
+      - mysql_data:/var/lib/mysql
+    networks:
+      - springboot-mysql-net
 
   backend:
+    image: gokavarapuabhi/end-backend:latest
     container_name: springboot
-    build:
-      context: ./springbootbackend
-      dockerfile: backend.dockerfile
     ports:
       - "2025:2000"
     depends_on:
       - mysqldb
     restart: on-failure
+    networks:
+      - springboot-mysql-net
 
   frontend:
+    image: gokavarapuabhi/end-frontend:latest
     container_name: react
-    build:
-      context: ./reactfrontend
-      dockerfile: frontend.dockerfile
     ports:
-      - "3000:80"
+      - "2001:80"
     depends_on:
       - backend
+    restart: on-failure
+    networks:
+      - springboot-mysql-net
 
-# Declare volumes at the bottom
 volumes:
-  mysql-data:
+  mysql_data:
+
+networks:
+  springboot-mysql-net:
